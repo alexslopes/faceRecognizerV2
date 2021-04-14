@@ -1,5 +1,7 @@
 package com.ifba.Facerecognizer.person.controller;
 
+import com.ifba.Facerecognizer.person.facade.PersonFacade;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/clientes")
 public class PersonController {
 
+    private final PersonFacade personFacade;
+
+    @Autowired
+    public  PersonController(PersonFacade personFacade) {
+        this.personFacade = personFacade;
+    }
 
     @PostMapping("traine")
     public String traineFace(@RequestParam("images") MultipartFile[] images) {
@@ -19,6 +27,7 @@ public class PersonController {
 
     @PostMapping("recognize")
     public String recognizeFace(@RequestParam("images") MultipartFile[] images) {
+        personFacade.recognizePeople(images);
         return("Recebi as imagens");
     }
 }
