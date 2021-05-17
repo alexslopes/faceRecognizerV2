@@ -1,8 +1,7 @@
 package com.ifba.Facerecognizer.person.controller;
 
-import com.ifba.Facerecognizer.person.facade.PersonService;
+import com.ifba.Facerecognizer.person.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +17,12 @@ public class PersonController {
     @Autowired
     public  PersonController(PersonService personService) {
         this.personService = personService;
+    }
+
+    @PostMapping("detect")
+    public String detectFace(@RequestParam("images") MultipartFile[] images) {
+        personService.training(images);
+        return("Recebi as imagens");
     }
 
     @PostMapping("traine")

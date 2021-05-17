@@ -1,9 +1,12 @@
-package com.ifba.Facerecognizer.person.facade;
+package com.ifba.Facerecognizer.person.service;
 
 import com.ifba.Facerecognizer.person.model.Person;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_face.EigenFaceRecognizer;
+import org.bytedeco.opencv.opencv_face.FaceRecognizer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,9 +24,14 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 @Service
 public class PersonService {
 
-    public static final String UPLOAD_FOLDER_PATTERN = "C:\\data\\uploadPhotos";
-    public static final String LOCAL_FACES_DETECTEDS = "C:\\data\\detectFaces";
+    public static final String UPLOAD_FOLDER_PATTERN = "./uploadPhotos";
+    public static final String LOCAL_FACES_DETECTEDS = "./detectFaces";
     JavaCVService javacv = JavaCVService.getInstance();
+
+    public boolean testeOpenCV(MultipartFile[] image) {
+        FaceRecognizer r = EigenFaceRecognizer.create();
+        return true;
+    }
 
     public boolean training(MultipartFile[] images) {
 
@@ -31,7 +39,7 @@ public class PersonService {
         Path faceDir = null;
 
         try{
-            dirLocal =  Files.createDirectories(Paths.get(UPLOAD_FOLDER_PATTERN + "teste"));
+            dirLocal =  Files.createDirectories(Paths.get(UPLOAD_FOLDER_PATTERN));
             faceDir = Files.createDirectories(Paths.get(LOCAL_FACES_DETECTEDS));
         } catch (IOException e) {
             e.printStackTrace();
@@ -41,7 +49,8 @@ public class PersonService {
             String uploadedFileLocation = dirLocal.getFileName() + "/" + image.getOriginalFilename();
 
             try {
-                image.transferTo(new File(uploadedFileLocation));
+                this.saveToFile(image.getInputStream(), uploadedFileLocation);
+                //image.transferTo(new File(uploadedFileLocation));
 
                 List<Mat> faces;
                 faces = javacv.detectFaces(ImageIO.read(new File(uploadedFileLocation)));
@@ -53,7 +62,7 @@ public class PersonService {
                 //TODO: verificar
                 imwrite(faceDir.getFileName() + "/person." + "teste" + ".jpg", faces.get(0));
                 //TODO: deltar arquivos dentro do diretorio
-                Files.delete(dirLocal);
+                Files.delete(Paths.get(uploadedFileLocation));
 
 
             } catch (IOException e) {
