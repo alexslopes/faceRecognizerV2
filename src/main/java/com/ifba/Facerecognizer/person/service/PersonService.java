@@ -42,30 +42,22 @@ public class PersonService {
         }
 
         for( int i = 0;  i < images.length; i++ ) {
-            String uploadedFileLocation = dirLocal.getFileName() + "/" + images[i].getOriginalFilename();
 
+            String uploadedFileLocation = faceDir.getFileName() + "/" + images[i].getOriginalFilename();
 
-                this.saveToFile(images[i].getInputStream(), uploadedFileLocation);
+            List<Mat> faces;
+            faces = javacv.detectFaces(ImageIO.read(images[i].getInputStream()));
 
-                List<Mat> faces;
-                faces = javacv.detectFaces(ImageIO.read(new File(uploadedFileLocation)));
+            if(faces.size() > 1)
+                throw new Exception("Só são permitidos uma face por foto");
 
-                if(faces.size() > 1)
-                    throw new Exception("Só são permitidos uma face por foto");
-
-                imwrite(faceDir.getFileName() + "/"+ "person." + id + "."+ i + ".jpg", faces.get(0));
-
-            try {
-                Files.delete(Paths.get(uploadedFileLocation));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            imwrite(faceDir.getFileName() + "/"+ "person." + id + "."+ i + ".jpg", faces.get(0));
 
         }
 
         try {
             javacv.trainClassifier(this.getFiles(faceDir.getFileName().toString()));
+            FileUtils.cleanDirectory(new File(faceDir.getFileName().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -95,13 +87,9 @@ public class PersonService {
         Person person;
         for(Mat face : faces) {
             idList = new ArrayList<>();
-            String id = javacv.recognizeFaces(face);//Todo: Fazer método javacv
+            String id = javacv.recognizeFaces(face);
             if(id != null) {
                 idList.add(id);
-                /*person = derby.buscar(Integer.parseInt(id));//Todo: fazer busca no repositóriio
-                person =
-                if(person != null)
-                    personList.add(person);*/
             }
         }
 
