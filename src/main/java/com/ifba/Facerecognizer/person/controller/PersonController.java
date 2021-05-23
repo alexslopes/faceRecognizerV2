@@ -19,15 +19,9 @@ public class PersonController {
         this.personService = personService;
     }
 
-    @PostMapping("detect")
-    public String detectFace(@RequestParam("images") MultipartFile[] images) {
-        personService.training(images);
-        return("Recebi as imagens");
-    }
-
     @PostMapping("traine")
-    public String traineFace(@RequestParam("images") MultipartFile[] images) {
-        personService.training(images);
+    public String traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("id") String id) throws Exception {
+        personService.training(images, id);
         return("Recebi as imagens");
     }
 

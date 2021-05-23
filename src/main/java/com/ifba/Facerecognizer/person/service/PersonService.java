@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 
@@ -28,12 +29,7 @@ public class PersonService {
     public static final String LOCAL_FACES_DETECTEDS = "./detectFaces";
     JavaCVService javacv = JavaCVService.getInstance();
 
-    public boolean testeOpenCV(MultipartFile[] image) {
-        FaceRecognizer r = EigenFaceRecognizer.create();
-        return true;
-    }
-
-    public boolean training(MultipartFile[] images) {
+    public boolean training(MultipartFile[] images, String id) throws Exception {
 
         Path dirLocal = null;
         Path faceDir = null;
@@ -45,35 +41,31 @@ public class PersonService {
             e.printStackTrace();
         }
 
-        for( MultipartFile image : images ) {
-            String uploadedFileLocation = dirLocal.getFileName() + "/" + image.getOriginalFilename();
+        for( int i = 0;  i < images.length; i++ ) {
+            String uploadedFileLocation = dirLocal.getFileName() + "/" + images[i].getOriginalFilename();
 
-            try {
-                this.saveToFile(image.getInputStream(), uploadedFileLocation);
-                //image.transferTo(new File(uploadedFileLocation));
+
+                this.saveToFile(images[i].getInputStream(), uploadedFileLocation);
 
                 List<Mat> faces;
                 faces = javacv.detectFaces(ImageIO.read(new File(uploadedFileLocation)));
 
-                //TODO: criar msg informando que não pode haver imagem com mais de uma face.
                 if(faces.size() > 1)
-                    return false;
+                    throw new Exception("Só são permitidos uma face por foto");
 
-                //TODO: verificar
-                imwrite(faceDir.getFileName() + "/person." + "teste" + ".jpg", faces.get(0));
-                //TODO: deltar arquivos dentro do diretorio
+                imwrite(faceDir.getFileName() + "/"+ "person." + id + "."+ i + ".jpg", faces.get(0));
+
+            try {
                 Files.delete(Paths.get(uploadedFileLocation));
-
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+
         }
 
-
         try {
-            javacv.train(this.getFiles(faceDir.getFileName().toString()));
+            javacv.trainClassifier(this.getFiles(faceDir.getFileName().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -103,7 +95,7 @@ public class PersonService {
         Person person;
         for(Mat face : faces) {
             idList = new ArrayList<>();
-            String id = javacv.recognize(face);//Todo: Fazer método javacv
+            String id = javacv.recognizeFaces(face);//Todo: Fazer método javacv
             if(id != null) {
                 idList.add(id);
                 /*person = derby.buscar(Integer.parseInt(id));//Todo: fazer busca no repositóriio

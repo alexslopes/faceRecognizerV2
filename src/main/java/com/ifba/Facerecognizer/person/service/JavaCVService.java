@@ -90,23 +90,7 @@ public class JavaCVService {
         return detectFaces;
     }
 
-    public String recognize(Mat face) {
-
-        IntPointer label = new IntPointer(1);
-        DoublePointer confiability = new DoublePointer(1);
-        recognizer.predict(face, label, confiability);
-        int predict = label.get(0);
-        String status = null;
-
-        if(predict != -1){
-            status = Integer.toString(predict);
-        }
-
-        return status;
-    }
-
-
-    public boolean train(File[] files) throws Exception{
+    public boolean trainClassifier(File[] files) throws Exception{
 
         MatVector photos = new MatVector(files.length);
         Mat labels = new Mat(files.length, 1, CV_32SC1);
@@ -122,11 +106,27 @@ public class JavaCVService {
         }
 
         recognizer.train(photos, labels);
+        //TODO: Separar classificadores
         File f = new File(this.EIGEN_FACES_CLASSIFIER);
         f.createNewFile();
         recognizer.save(f.getAbsolutePath());
         return true;
 
+    }
+
+    public String recognizeFaces(Mat face) {
+
+        IntPointer label = new IntPointer(1);
+        DoublePointer confiability = new DoublePointer(1);
+        recognizer.predict(face, label, confiability);
+        int predict = label.get(0);
+        String status = null;
+
+        if(predict != -1){
+            status = Integer.toString(predict);
+        }
+
+        return status;
     }
 
     public static Mat BufferedImage2Mat(BufferedImage image) throws IOException {
