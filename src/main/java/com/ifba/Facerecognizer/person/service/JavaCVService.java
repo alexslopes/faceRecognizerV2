@@ -94,14 +94,14 @@ public class JavaCVService {
 
         MatVector photos = new MatVector(files.length);
         Mat labels = new Mat(files.length, 1, CV_32SC1);
-        IntBuffer rotulosBuffer = labels.createBuffer();
+        IntBuffer labelBuffer = labels.createBuffer();
         int counter = 0;
         for (File image : files) {
             Mat photo = imread(image.getAbsolutePath(), IMREAD_GRAYSCALE);
             int classe = Integer.parseInt(image.getName().split("\\.")[1]);
             resize(photo, photo, new Size(IMG_SIZE, IMG_SIZE));
             photos.put(counter, photo);
-            rotulosBuffer.put(counter, classe);
+            labelBuffer.put(counter, classe);
             counter++;
         }
 
