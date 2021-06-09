@@ -24,7 +24,7 @@ public class PersonController {
         return("Recebi as imagens");
     }
 
-    @GetMapping("recognize")
+    @PostMapping("recognize")
     public List<String> recognizeFace(@RequestParam("images") MultipartFile[] images) {
         return personService.recognizePeople(images);
     }
