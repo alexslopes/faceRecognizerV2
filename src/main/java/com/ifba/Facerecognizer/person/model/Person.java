@@ -1,24 +1,24 @@
 package com.ifba.Facerecognizer.person.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import org.springframework.lang.NonNull;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
+@AllArgsConstructor
+@Builder
 public class Person {
-
+    @Id
+    @GeneratedValue
     private int id;
-    private String nome;
 
-    public int getId() {
-        return id;
-    }
+    @NonNull
+    private String name;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
+    @NonNull
+    private String email;
 }
