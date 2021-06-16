@@ -36,4 +36,8 @@ public class PersonService {
         this.personRepository.save(person);
     }
 
+    public Person findByEmail(String email) {
+        return this.personRepository.findByEmail(email);
+    }
+
 }

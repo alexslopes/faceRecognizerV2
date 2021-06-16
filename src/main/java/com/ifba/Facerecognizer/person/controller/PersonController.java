@@ -30,9 +30,9 @@ public class PersonController {
     }
 
     @PostMapping("traine")
-    public String traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("id") String id) throws Exception {
+    public String traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("email") String email) {
 
-        personFacade.training(images, id);
+        personFacade.traineFace(images, email);
         return("Recebi as imagens");
     }
 

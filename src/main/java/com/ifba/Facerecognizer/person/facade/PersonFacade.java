@@ -22,19 +22,23 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 @Service
 public class PersonFacade {
 
+    private final PersonService personService;
+
     public static final String UPLOAD_FOLDER_PATTERN = "./uploadPhotos";
     public static final String LOCAL_FACES_DETECTEDS = "./detectFaces";
 
     JavaCVService javacv = JavaCVService.getInstance();
 
+    public PersonFacade(PersonService personService) {
+        this.personService = personService;
+    }
 
-    public boolean training(MultipartFile[] images, String id) throws Exception {
 
-        Path dirLocal = null;
+    public boolean training(MultipartFile[] images, int id) throws Exception {
+
         Path faceDir = null;
 
         try{
-            dirLocal =  Files.createDirectories(Paths.get(UPLOAD_FOLDER_PATTERN));
             faceDir = Files.createDirectories(Paths.get(LOCAL_FACES_DETECTEDS));
         } catch (IOException e) {
             e.printStackTrace();
@@ -129,6 +133,19 @@ public class PersonFacade {
         };
 
         return photosFolder.listFiles(imageFilter);
+    }
+
+    public String traineFace(MultipartFile[] images, String email){
+        Person person = personService.findByEmail(email);
+        if(person == null)
+            return "Pessoa nâo cadastrada no banco de dados";
+
+        try {
+            this.training(images, personService.findByEmail(email).getId());
+        } catch (Exception e) {
+            return "Foto com rosto com mais de uma face";
+        }
+        return "Imagem recebida com sucesso";
     }
 
 }
