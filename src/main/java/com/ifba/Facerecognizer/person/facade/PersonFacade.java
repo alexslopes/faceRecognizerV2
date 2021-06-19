@@ -1,6 +1,8 @@
 package com.ifba.Facerecognizer.person.facade;
 
+import com.ifba.Facerecognizer.person.model.FileDetectFace;
 import com.ifba.Facerecognizer.person.model.Person;
+import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -15,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
@@ -34,7 +37,7 @@ public class PersonFacade {
     }
 
 
-    public boolean training(MultipartFile[] images, int id) throws Exception {
+    public List<FileDetectFace> training(MultipartFile[] images, Person person) {
 
         Path faceDir = null;
 
@@ -44,17 +47,38 @@ public class PersonFacade {
             e.printStackTrace();
         }
 
+        List<FileDetectFace> fileDetectFaces = new ArrayList<>();
         for( int i = 0;  i < images.length; i++ ) {
 
-            String uploadedFileLocation = faceDir.getFileName() + "/" + images[i].getOriginalFilename();
+            List<Mat> faces = null;
+            String message = null;
+            String status = null;
+            try {
+                faces = javacv.detectFaces(ImageIO.read(images[i].getInputStream()));
+            } catch (IOException e) {
+                message = "Erro ao ler imagem";
+                status = "Error";
+            }
 
-            List<Mat> faces;
-            faces = javacv.detectFaces(ImageIO.read(images[i].getInputStream()));
+            if(faces.size() == 1) {
+                message = "Face detectada com sucesso";
+                status = "Ok";
+                imwrite(faceDir.getFileName() + "/" + "person." + person.getId() + "." + i + ".jpg", faces.get(0));
 
-            if(faces.size() > 1)
-                throw new Exception("Só são permitidos uma face por foto");
+            } else if ( faces.size() > 1 ){
+                message = "Mais de uma face encontrada";
+                status = "Error";
+            } else if ( faces.size() == 0 ){
+                message = "Não foim encontrada face";
+                status = "Error";
+            }
 
-            imwrite(faceDir.getFileName() + "/"+ "person." + id + "."+ i + ".jpg", faces.get(0));
+            FileDetectFace fileDetectFace = FileDetectFace.builder().
+                    filename(images[i].getOriginalFilename()).
+                    message(message).
+                    status(status).build();
+
+            fileDetectFaces.add(fileDetectFace);
 
         }
 
@@ -65,38 +89,45 @@ public class PersonFacade {
             e.printStackTrace();
         }
 
-        return true;
+        return fileDetectFaces;
     }
 
-    public List<String> recognizePeople(MultipartFile[] images) {
+    public List<PersonFileRecognize> recognizePeople(MultipartFile[] images) {
         List<Mat> faces = null;
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
 
         String uploadedFileLocation;
+        List<PersonFileRecognize> personFileRecognizeList = new ArrayList<>();
         for(MultipartFile img : images) {
             uploadedFileLocation = dirLocal.getAbsolutePath() + "/" + img.getOriginalFilename();
             try {
                 this.saveToFile(img.getInputStream(), uploadedFileLocation);
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
                 faces = javacv.detectFaces(image);
+
+                List<Person> personList = null;
+                for(Mat face : faces) {
+                    Integer id = javacv.recognizeFaces(face);
+                    if(id != null) {
+                        if(personList == null)
+                            personList = new ArrayList<>();
+
+                        personList.add(personService.findById(id).get());
+                    }
+                }
+
+                if(personList != null)
+                    personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
+                                    .personList(personList)
+                                    .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
+                                            "Não foi encontrado faces conhecidas").build());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        List<String> idList = null;
-        List<Person> personList = new ArrayList<>();
-        Person person;
-        for(Mat face : faces) {
-            idList = new ArrayList<>();
-            String id = javacv.recognizeFaces(face);
-            if(id != null) {
-                idList.add(id);
-            }
-        }
-
-        return idList;
+        return personFileRecognizeList;
     }
 
     public static File createFolderIfNotExists(String dirName) throws SecurityException {
@@ -135,17 +166,13 @@ public class PersonFacade {
         return photosFolder.listFiles(imageFilter);
     }
 
-    public String traineFace(MultipartFile[] images, String email){
+    public List<FileDetectFace> traineFace(MultipartFile[] images, String email) throws Exception {
         Person person = personService.findByEmail(email);
-        if(person == null)
-            return "Pessoa nâo cadastrada no banco de dados";
 
-        try {
-            this.training(images, personService.findByEmail(email).getId());
-        } catch (Exception e) {
-            return "Foto com rosto com mais de uma face";
-        }
-        return "Imagem recebida com sucesso";
+        if(person == null)
+            throw new Exception("Usuário não encontrado");
+
+        return this.training(images, person);
     }
 
 }

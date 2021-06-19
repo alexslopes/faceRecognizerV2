@@ -114,22 +114,20 @@ public class JavaCVService {
 
     }
 
-    public String recognizeFaces(Mat face) {
+    public Integer recognizeFaces(Mat face) {
 
         IntPointer label = new IntPointer(1);
         DoublePointer confiability = new DoublePointer(1);
         recognizer.predict(face, label, confiability);
         int predict = label.get(0);
-        String status = null;
 
-        if(predict != -1){
-            status = Integer.toString(predict);
-        }
+        if(predict == -1)
+            return null;
 
-        return status;
+        return predict;
     }
 
-    public static Mat BufferedImage2Mat(BufferedImage image) throws IOException {
+    public static Mat BufferedImage2Mat(BufferedImage image) {
         OpenCVFrameConverter.ToMat cv = new OpenCVFrameConverter.ToMat();
         return cv.convertToMat(new Java2DFrameConverter().convert(image));
     }
