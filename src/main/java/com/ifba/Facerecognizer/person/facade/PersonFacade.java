@@ -3,6 +3,7 @@ package com.ifba.Facerecognizer.person.facade;
 import com.ifba.Facerecognizer.person.model.FileDetectFace;
 import com.ifba.Facerecognizer.person.model.Person;
 import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
+import com.ifba.Facerecognizer.person.model.ResponseTraine;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
@@ -37,7 +37,7 @@ public class PersonFacade {
     }
 
 
-    public List<FileDetectFace> training(MultipartFile[] images, Person person) {
+    public ResponseTraine training(MultipartFile[] images, Person person) {
 
         Path faceDir = null;
 
@@ -48,6 +48,9 @@ public class PersonFacade {
         }
 
         List<FileDetectFace> fileDetectFaces = new ArrayList<>();
+        int totalFacetraineSucess = 0;
+        int totalErroNoface = 0;
+        int totalErroMAnyfaces = 0;
         for( int i = 0;  i < images.length; i++ ) {
 
             List<Mat> faces = null;
@@ -63,13 +66,16 @@ public class PersonFacade {
             if(faces.size() == 1) {
                 message = "Face detectada com sucesso";
                 status = "Ok";
+                totalFacetraineSucess++;
                 imwrite(faceDir.getFileName() + "/" + "person." + person.getId() + "." + i + ".jpg", faces.get(0));
 
             } else if ( faces.size() > 1 ){
                 message = "Mais de uma face encontrada";
+                totalErroMAnyfaces++;
                 status = "Error";
             } else if ( faces.size() == 0 ){
                 message = "Não foim encontrada face";
+                totalErroNoface++;
                 status = "Error";
             }
 
@@ -89,7 +95,12 @@ public class PersonFacade {
             e.printStackTrace();
         }
 
-        return fileDetectFaces;
+        return ResponseTraine.builder().
+                totalFace(images.length)
+                .totalErroMAnyfaces(totalErroMAnyfaces)
+                .totalFacetraineSucess(totalFacetraineSucess)
+                .totalErroNoface(totalErroNoface)
+                .fileDetectFaceList(fileDetectFaces).build();
     }
 
     public List<PersonFileRecognize> recognizePeople(MultipartFile[] images) {
@@ -166,7 +177,7 @@ public class PersonFacade {
         return photosFolder.listFiles(imageFilter);
     }
 
-    public List<FileDetectFace> traineFace(MultipartFile[] images, String email) throws Exception {
+    public ResponseTraine traineFace(MultipartFile[] images, String email) throws Exception {
         Person person = personService.findByEmail(email);
 
         if(person == null)

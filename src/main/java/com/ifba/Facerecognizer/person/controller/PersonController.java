@@ -1,9 +1,9 @@
 package com.ifba.Facerecognizer.person.controller;
 
 import com.ifba.Facerecognizer.person.facade.PersonFacade;
-import com.ifba.Facerecognizer.person.model.FileDetectFace;
 import com.ifba.Facerecognizer.person.model.Person;
 import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
+import com.ifba.Facerecognizer.person.model.ResponseTraine;
 import com.ifba.Facerecognizer.person.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +32,7 @@ public class PersonController {
     }
 
     @PostMapping("traine")
-    public List<FileDetectFace> traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("email") String email) throws Exception {
+    public ResponseTraine traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("email") String email) throws Exception {
 
         return personFacade.traineFace(images, email);
     }
