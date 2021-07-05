@@ -32,10 +32,10 @@ public class JavaCVService {
     private static final int IMG_SIZE = 160;
     public static JavaCVService javaCVService;
 
-    public static final String EIGEN_FACES_CLASSIFIER = "C:\\Users\\lopes\\Dev\\Facerecognizer\\resources\\eigenFacesClassifier.yml";
-    public static final String FRONTAL_FACE_CLASSIFIER = "C:\\Users\\lopes\\Dev\\Facerecognizer\\resources\\frontalface.xml";
-    public static final String UPLOAD_FOLDER_PATTERN = "C:\\data\\uploadPhotos";
-    public static final String LOCAL_FACES_DETECTEDS = "C:\\data\\detectFaces";
+    public static final String EIGEN_FACES_CLASSIFIER = "resources/eigenFacesClassifier.yml";
+    public static final String FRONTAL_FACE_CLASSIFIER = "resources/frontalface.xml";
+    public static final String UPLOAD_FOLDER_PATTERN = "data/uploadPhotos";
+    public static final String LOCAL_FACES_DETECTEDS = "data/detectFaces";
 
     private JavaCVService() {
         setFaceDetector(FRONTAL_FACE_CLASSIFIER);
