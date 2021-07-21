@@ -90,7 +90,7 @@ public class PersonFacade {
 
         try {
             javacv.trainClassifier(this.getFiles(faceDir.getFileName().toString()));
-            FileUtils.cleanDirectory(new File(faceDir.getFileName().toString()));
+            //FileUtils.cleanDirectory(new File(faceDir.getFileName().toString()));
         } catch (Exception e) {
             e.printStackTrace();
         }
