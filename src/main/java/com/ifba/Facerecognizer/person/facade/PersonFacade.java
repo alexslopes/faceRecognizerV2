@@ -4,9 +4,8 @@ import com.ifba.Facerecognizer.person.model.FileDetectFace;
 import com.ifba.Facerecognizer.person.model.Person;
 import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
 import com.ifba.Facerecognizer.person.model.ResponseTraine;
-import com.ifba.Facerecognizer.person.service.JavaCVService;
+import helper.TrainHelper;
 import com.ifba.Facerecognizer.person.service.PersonService;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +29,7 @@ public class PersonFacade {
     public static final String UPLOAD_FOLDER_PATTERN = "./uploadPhotos";
     public static final String LOCAL_FACES_DETECTEDS = "./detectFaces";
 
-    JavaCVService javacv = JavaCVService.getInstance();
+    TrainHelper javacv = TrainHelper.getInstance();
 
     public PersonFacade(PersonService personService) {
         this.personService = personService;

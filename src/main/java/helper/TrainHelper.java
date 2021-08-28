@@ -1,10 +1,9 @@
-package com.ifba.Facerecognizer.person.service;
+package helper;
 
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_face.EigenFaceRecognizer;
 import org.bytedeco.opencv.opencv_face.FaceRecognizer;
@@ -19,50 +18,39 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
 
-public class JavaCVService {
+public class TrainHelper {
 
     private static CascadeClassifier faceDetector;
     private static FaceRecognizer recognizer;
     private static final int IMG_SIZE = 160;
-    public static JavaCVService javaCVService;
+    public static TrainHelper trainHelper;
 
     public static final String EIGEN_FACES_CLASSIFIER = "resources/eigenFacesClassifier.yml";
     public static final String FRONTAL_FACE_CLASSIFIER = "resources/frontalface.xml";
-    public static final String UPLOAD_FOLDER_PATTERN = "data/uploadPhotos";
-    public static final String LOCAL_FACES_DETECTEDS = "data/detectFaces";
 
-    private JavaCVService() {
+    private TrainHelper() {
         setFaceDetector(FRONTAL_FACE_CLASSIFIER);
         setRecognizer(EIGEN_FACES_CLASSIFIER);
 
     }
 
-    public static JavaCVService getInstance() {
-        if(javaCVService == null) {
-            javaCVService = new JavaCVService();
+    public static TrainHelper getInstance() {
+        if(trainHelper == null) {
+            trainHelper = new TrainHelper();
         }
-        return javaCVService;
+        return trainHelper;
     }
 
-    public CascadeClassifier getFaceDetector() {
-        return faceDetector;
-    }
-
-    public void setFaceDetector(String path) {
+    private void setFaceDetector(String path) {
         faceDetector = new CascadeClassifier(path);
     }
 
-    public FaceRecognizer getRecognizer() {
-        return recognizer;
-    }
-
-    public void setRecognizer(String path) {
+    private void setRecognizer(String path) {
         recognizer =  EigenFaceRecognizer.create();
         File file = new File(path);
         recognizer.read(file.getAbsolutePath());
@@ -127,7 +115,7 @@ public class JavaCVService {
         return predict;
     }
 
-    public static Mat BufferedImage2Mat(BufferedImage image) {
+    private static Mat BufferedImage2Mat(BufferedImage image) {
         OpenCVFrameConverter.ToMat cv = new OpenCVFrameConverter.ToMat();
         return cv.convertToMat(new Java2DFrameConverter().convert(image));
     }
