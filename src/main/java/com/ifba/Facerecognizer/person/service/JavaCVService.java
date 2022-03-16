@@ -81,7 +81,7 @@ public class JavaCVService {
 
         for(int i = 0 ;i < faces.size(); i++) {
             Rect mainFace;
-            mainFace = faces.get(0);
+            mainFace = faces.get(i);
             Mat detectFace = new Mat(greyMat, mainFace);
             resize(detectFace, detectFace, new Size(160, 160));
             detectFaces.add(detectFace);
