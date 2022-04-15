@@ -89,6 +89,26 @@ public class JavaCVService {
 
         return detectFaces;
     }
+    public List<Mat> detectFacesWithGray(BufferedImage image) throws IOException {
+
+        List<Mat> detectFaces = new ArrayList<>();
+
+        Mat greyMat = this.BufferedImage2Mat(image);
+        RectVector faces = new RectVector();
+        faceDetector.detectMultiScale(greyMat, faces);
+        System.out.println("Faces detectadas: " + faces.size());
+
+        for(int i = 0 ;i < faces.size(); i++) {
+            Rect mainFace;
+            mainFace = faces.get(i);
+            Mat detectFace = new Mat(greyMat, mainFace);
+            resize(detectFace, detectFace, new Size(160, 160));
+            detectFaces.add(detectFace);
+        }
+
+        return detectFaces;
+    }
+
 
     public boolean trainClassifier(File[] files) throws Exception{
 

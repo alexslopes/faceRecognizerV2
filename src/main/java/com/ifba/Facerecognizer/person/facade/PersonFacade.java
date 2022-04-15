@@ -57,7 +57,7 @@ public class PersonFacade {
             String message = null;
             String status = null;
             try {
-                faces = javacv.detectFaces(ImageIO.read(images[i].getInputStream()));
+                faces = javacv.detectFacesWithGray(ImageIO.read(images[i].getInputStream()));
             } catch (IOException e) {
                 message = "Erro ao ler imagem";
                 status = "Error";
