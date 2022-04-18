@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.nio.IntBuffer;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.bytedeco.opencv.global.opencv_imgproc.CV_BGR2GRAY;
 
@@ -36,6 +38,12 @@ public class JavaCVService {
     public static final String FRONTAL_FACE_CLASSIFIER = "resources/frontalface.xml";
     public static final String UPLOAD_FOLDER_PATTERN = "data/uploadPhotos";
     public static final String LOCAL_FACES_DETECTEDS = "data/detectFaces";
+
+    public Mat getRgbaMat() {
+        return rgbaMat;
+    }
+
+    private Mat rgbaMat;
 
     private JavaCVService() {
         setFaceDetector(FRONTAL_FACE_CLASSIFIER);
@@ -68,7 +76,32 @@ public class JavaCVService {
         recognizer.read(file.getAbsolutePath());
     }
 
-    public List<Mat> detectFaces(BufferedImage image) throws IOException {
+    public Map<Mat, Rect> detectFaces(BufferedImage image) throws IOException {
+
+        Map<Mat, Rect> detectFaces = new HashMap<>();
+
+        Mat rgbaMat = this.BufferedImage2Mat(image);
+        Mat greyMat = new Mat();
+        cvtColor(rgbaMat, greyMat, CV_BGR2GRAY);
+        RectVector faces = new RectVector();
+        faceDetector.detectMultiScale(greyMat, faces);
+        System.out.println("Faces detectadas: " + faces.size());
+
+        for(int i = 0 ;i < faces.size(); i++) {
+            Rect mainFace;
+            mainFace = faces.get(i);
+            Mat detectFace = new Mat(greyMat, mainFace);
+            resize(detectFace, detectFace, new Size(160, 160));
+            detectFaces.put(detectFace, mainFace);
+            rectangle(rgbaMat, mainFace, new Scalar(0,255,0,0));
+        }
+
+        this.rgbaMat = rgbaMat;
+
+        return detectFaces;
+    }
+
+    public List<Mat> detectFacesList(BufferedImage image) throws IOException {
 
         List<Mat> detectFaces = new ArrayList<>();
 
@@ -85,7 +118,10 @@ public class JavaCVService {
             Mat detectFace = new Mat(greyMat, mainFace);
             resize(detectFace, detectFace, new Size(160, 160));
             detectFaces.add(detectFace);
+            rectangle(rgbaMat, mainFace, new Scalar(0,255,0,0));
         }
+
+        this.rgbaMat = rgbaMat;
 
         return detectFaces;
     }

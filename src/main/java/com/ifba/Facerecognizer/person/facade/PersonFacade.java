@@ -8,6 +8,9 @@ import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.Point;
+import org.bytedeco.opencv.opencv_core.Rect;
+import org.bytedeco.opencv.opencv_core.Scalar;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,8 +22,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
+import static org.bytedeco.opencv.global.opencv_imgproc.FONT_HERSHEY_PLAIN;
+import static org.bytedeco.opencv.global.opencv_imgproc.putText;
 
 @Service
 public class PersonFacade {
@@ -57,7 +63,7 @@ public class PersonFacade {
             String message = null;
             String status = null;
             try {
-                faces = javacv.detectFacesWithGray(ImageIO.read(images[i].getInputStream()));
+                faces = javacv.detectFacesList(ImageIO.read(images[i].getInputStream()));
             } catch (IOException e) {
                 message = "Erro ao ler imagem";
                 status = "Error";
@@ -104,7 +110,7 @@ public class PersonFacade {
     }
 
     public List<PersonFileRecognize> recognizePeople(MultipartFile[] images) {
-        List<Mat> faces = null;
+        Map<Mat, Rect> faces = null;
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
 
@@ -118,21 +124,29 @@ public class PersonFacade {
                 faces = javacv.detectFaces(image);
 
                 List<Person> personList = null;
-                for(Mat face : faces) {
-                    Integer id = javacv.recognizeFaces(face);
+                for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
+                    Integer id = javacv.recognizeFaces(face.getKey());
                     if(id != null) {
-                        if(personList == null)
+                        if(personList == null) {
                             personList = new ArrayList<>();
+                        }
 
+                        int x = Math.max(face.getValue().tl().x() - 10, 0);
+                        int y = Math.max(face.getValue().tl().y() - 10, 0);
+
+                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
                     }
                 }
 
-                if(personList != null)
+                if(personList != null) {
                     personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
-                                    .personList(personList)
-                                    .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
-                                            "Não foi encontrado faces conhecidas").build());
+                            .personList(personList)
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
+                                    "Não foi encontrado faces conhecidas").build());
+                }
+
+                imwrite("Resultado.jpg", javacv.getRgbaMat());
             } catch (IOException e) {
                 e.printStackTrace();
             }
