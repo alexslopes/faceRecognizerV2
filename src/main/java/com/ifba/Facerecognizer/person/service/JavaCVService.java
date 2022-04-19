@@ -4,12 +4,9 @@ import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_face.EigenFaceRecognizer;
 import org.bytedeco.opencv.opencv_face.FaceRecognizer;
-import org.bytedeco.opencv.opencv_face.FisherFaceRecognizer;
-import org.bytedeco.opencv.opencv_face.LBPHFaceRecognizer;
 import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
 
 import static org.bytedeco.opencv.global.opencv_core.CV_32SC1;
@@ -21,7 +18,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,10 +82,12 @@ public class JavaCVService {
         recognizer.read(classifier);
     }
 
-    public void setTrainer() {
+    public void setTrainer(MatVector photos, Mat labels) {
         recognizer =  EigenFaceRecognizer.create();
         //recognizer =  FisherFaceRecognizer.create();
         //recognizer =  LBPHFaceRecognizer.create(2,9,9,9,1);
+
+        recognizer.train(photos, labels);
         recognizer.save(classifier);
     }
 
@@ -165,8 +163,6 @@ public class JavaCVService {
 
     public boolean trainClassifier(File[] files) throws Exception{
 
-        this.setTrainer();
-
         MatVector photos = new MatVector(files.length);
         Mat labels = new Mat(files.length, 1, CV_32SC1);
         IntBuffer labelBuffer = labels.createBuffer();
@@ -180,9 +176,8 @@ public class JavaCVService {
             counter++;
         }
 
-        recognizer.train(photos, labels);
         //TODO: Separar classificadores
-        recognizer.save(classifier);
+        this.setTrainer(photos, labels);
         return true;
 
     }
