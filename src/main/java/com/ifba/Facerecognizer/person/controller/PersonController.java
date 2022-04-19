@@ -42,4 +42,12 @@ public class PersonController {
 
         return personFacade.recognizePeople(images);
     }
+
+    @PostMapping("traine-register")
+    public ResponseTraine traineFace(@RequestParam("images") MultipartFile[] images, @RequestParam("email") String email,  @RequestParam("name") String name) throws Exception {
+
+        personService.save(Person.builder().email(email).name(name).build());
+        return personFacade.traineFace2(images, email);
+    }
+
 }

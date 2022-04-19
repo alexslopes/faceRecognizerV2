@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -21,8 +22,10 @@ public class Person {
     private int id;
 
     @NonNull
+    @Column(unique = true)
     private String name;
 
     @NonNull
+    @Column(unique = true)
     private String email;
 }

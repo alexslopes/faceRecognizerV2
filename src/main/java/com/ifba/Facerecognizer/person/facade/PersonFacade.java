@@ -7,10 +7,7 @@ import com.ifba.Facerecognizer.person.model.ResponseTraine;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.bytedeco.opencv.opencv_core.Mat;
-import org.bytedeco.opencv.opencv_core.Point;
-import org.bytedeco.opencv.opencv_core.Rect;
-import org.bytedeco.opencv.opencv_core.Scalar;
+import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +61,7 @@ public class PersonFacade {
             String message = null;
             String status = null;
             try {
-                faces = javacv.detectFacesList(ImageIO.read(images[i].getInputStream()));
+                faces = javacv.detectFacesWithGray(ImageIO.read(images[i].getInputStream()));
             } catch (IOException e) {
                 message = "Erro ao ler imagem";
                 status = "Error";
@@ -122,6 +120,8 @@ public class PersonFacade {
                 this.saveToFile(img.getInputStream(), uploadedFileLocation);
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
                 faces = javacv.detectFaces(image);
+
+                javacv.setRecognizer();
 
                 List<Person> personList = null;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
@@ -198,6 +198,81 @@ public class PersonFacade {
             throw new Exception("Usuário não encontrado");
 
         return this.training(images, person);
+    }
+
+    public ResponseTraine traineFace2(MultipartFile[] images, String email) throws Exception {
+        Person person = personService.findByEmail(email);
+
+        if(person == null)
+            throw new Exception("Usuário não encontrado");
+
+        return this.training2(images, person);
+    }
+
+    public ResponseTraine training2(MultipartFile[] images, Person person) {
+
+        Path faceDir = null;
+
+        try{
+            faceDir = Files.createDirectories(Paths.get(LOCAL_FACES_DETECTEDS));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<FileDetectFace> fileDetectFaces = new ArrayList<>();
+        int totalFacetraineSucess = 0;
+        int totalErroNoface = 0;
+        int totalErroMAnyfaces = 0;
+        for( int i = 0;  i < images.length; i++ ) {
+
+            List<Mat> faces = null;
+            String message = null;
+            String status = null;
+            try {
+                faces = Arrays.asList(javacv.BufferedImage2Mat(ImageIO.read(images[i].getInputStream())));
+            } catch (IOException e) {
+                message = "Erro ao ler imagem";
+                status = "Error";
+            }
+
+            if(faces.size() == 1) {
+                message = "Face detectada com sucesso";
+                status = "Ok";
+                totalFacetraineSucess++;
+                imwrite(faceDir.getFileName() + "/" + "person." + person.getId() + "." + i + ".jpg", faces.get(0));
+
+            } else if ( faces.size() > 1 ){
+                message = "Mais de uma face encontrada";
+                totalErroMAnyfaces++;
+                status = "Error";
+            } else if ( faces.size() == 0 ){
+                message = "Não foim encontrada face";
+                totalErroNoface++;
+                status = "Error";
+            }
+
+            FileDetectFace fileDetectFace = FileDetectFace.builder().
+                    filename(images[i].getOriginalFilename()).
+                    message(message).
+                    status(status).build();
+
+            fileDetectFaces.add(fileDetectFace);
+
+        }
+
+        try {
+            javacv.trainClassifier(this.getFiles(faceDir.getFileName().toString()));
+            //FileUtils.cleanDirectory(new File(faceDir.getFileName().toString()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ResponseTraine.builder().
+                totalFace(images.length)
+                .totalErroMAnyfaces(totalErroMAnyfaces)
+                .totalFacetraineSucess(totalFacetraineSucess)
+                .totalErroNoface(totalErroNoface)
+                .fileDetectFaceList(fileDetectFaces).build();
     }
 
 }

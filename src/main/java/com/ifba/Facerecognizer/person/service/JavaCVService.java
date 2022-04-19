@@ -8,6 +8,8 @@ import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.opencv_face.EigenFaceRecognizer;
 import org.bytedeco.opencv.opencv_face.FaceRecognizer;
+import org.bytedeco.opencv.opencv_face.FisherFaceRecognizer;
+import org.bytedeco.opencv.opencv_face.LBPHFaceRecognizer;
 import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
 
 import static org.bytedeco.opencv.global.opencv_core.CV_32SC1;
@@ -35,9 +37,13 @@ public class JavaCVService {
     public static JavaCVService javaCVService;
 
     public static final String EIGEN_FACES_CLASSIFIER = "resources/eigenFacesClassifier.yml";
+    public static final String FISHER_FACES_CLASSIFIER = "resources/fisherFacesClassifier.yml";
+    public static final String LBPH_FACES_CLASSIFIER = "resources/lbphFacesClassifier.yml";
     public static final String FRONTAL_FACE_CLASSIFIER = "resources/frontalface.xml";
     public static final String UPLOAD_FOLDER_PATTERN = "data/uploadPhotos";
     public static final String LOCAL_FACES_DETECTEDS = "data/detectFaces";
+
+    public static final String classifier = EIGEN_FACES_CLASSIFIER;
 
     public Mat getRgbaMat() {
         return rgbaMat;
@@ -47,7 +53,10 @@ public class JavaCVService {
 
     private JavaCVService() {
         setFaceDetector(FRONTAL_FACE_CLASSIFIER);
-        setRecognizer(EIGEN_FACES_CLASSIFIER);
+
+        //setRecognizer(FISHER_FACES_CLASSIFIER);
+
+        //setRecognizer(LBPH_FACES_CLASSIFIER);
 
     }
 
@@ -70,10 +79,18 @@ public class JavaCVService {
         return recognizer;
     }
 
-    public void setRecognizer(String path) {
+    public void setRecognizer() {
         recognizer =  EigenFaceRecognizer.create();
-        File file = new File(path);
-        recognizer.read(file.getAbsolutePath());
+        //recognizer =  FisherFaceRecognizer.create();
+        //recognizer =  LBPHFaceRecognizer.create(2,9,9,9,1);
+        recognizer.read(classifier);
+    }
+
+    public void setTrainer() {
+        recognizer =  EigenFaceRecognizer.create();
+        //recognizer =  FisherFaceRecognizer.create();
+        //recognizer =  LBPHFaceRecognizer.create(2,9,9,9,1);
+        recognizer.save(classifier);
     }
 
     public Map<Mat, Rect> detectFaces(BufferedImage image) throws IOException {
@@ -148,6 +165,8 @@ public class JavaCVService {
 
     public boolean trainClassifier(File[] files) throws Exception{
 
+        this.setTrainer();
+
         MatVector photos = new MatVector(files.length);
         Mat labels = new Mat(files.length, 1, CV_32SC1);
         IntBuffer labelBuffer = labels.createBuffer();
@@ -163,9 +182,7 @@ public class JavaCVService {
 
         recognizer.train(photos, labels);
         //TODO: Separar classificadores
-        File f = new File(this.EIGEN_FACES_CLASSIFIER);
-        f.createNewFile();
-        recognizer.save(f.getAbsolutePath());
+        recognizer.save(classifier);
         return true;
 
     }
