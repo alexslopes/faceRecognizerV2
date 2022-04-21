@@ -80,9 +80,19 @@ public class JavaCVService {
 
     public void setEiginFaceRecognizer() {
         eigenFaceRecognizer =  EigenFaceRecognizer.create();
-        //recognizer =  FisherFaceRecognizer.create();
-        //recognizer =  LBPHFaceRecognizer.create(2,9,9,9,1);
         eigenFaceRecognizer.read(EIGEN_FACES_CLASSIFIER);
+        //recognizer.setThreshold(2000);
+    }
+
+    public void setLBPHFaceRecognizer() {
+        lbphRecognizer =  LBPHFaceRecognizer.create();
+        lbphRecognizer.read(LBPH_FACES_CLASSIFIER);
+        //recognizer.setThreshold(2000);
+    }
+
+    public void setFisherFaceRecognizer() {
+        fisherFaceRecognizer =  FisherFaceRecognizer.create();
+        fisherFaceRecognizer.read(FISHER_FACES_CLASSIFIER);
         //recognizer.setThreshold(2000);
     }
 
@@ -94,7 +104,7 @@ public class JavaCVService {
     }
 
     public void setLBPHFaceTrainer(MatVector photos, Mat labels) {
-        lbphRecognizer =  LBPHFaceRecognizer.create(2,9,9,9,1);
+        lbphRecognizer =  LBPHFaceRecognizer.create();
 
         lbphRecognizer.train(photos, labels);
         lbphRecognizer.save(LBPH_FACES_CLASSIFIER);
@@ -195,16 +205,42 @@ public class JavaCVService {
         //TODO: Separar classificadores
         this.setEiginFaceTrainer(photos, labels);
         this.setLBPHFaceTrainer(photos, labels);
-        //this.setFisherFaceTrainer(photos, labels);
+        this.setFisherFaceTrainer(photos, labels);
         return true;
 
     }
 
-    public Integer recognizeFaces(Mat face) {
+    public Integer recognizeEigenFaces(Mat face) {
 
         IntPointer label = new IntPointer(1);
         DoublePointer confiability = new DoublePointer(1);
         eigenFaceRecognizer.predict(face, label, confiability);
+        int predict = label.get(0);
+
+        if(predict == -1)
+            return null;
+
+        return predict;
+    }
+
+    public Integer recognizeFisherFaces(Mat face) {
+
+        IntPointer label = new IntPointer(1);
+        DoublePointer confiability = new DoublePointer(1);
+        fisherFaceRecognizer.predict(face, label, confiability);
+        int predict = label.get(0);
+
+        if(predict == -1)
+            return null;
+
+        return predict;
+    }
+
+    public Integer recognizeLPBHFaces(Mat face) {
+
+        IntPointer label = new IntPointer(1);
+        DoublePointer confiability = new DoublePointer(1);
+        lbphRecognizer.predict(face, label, confiability);
         int predict = label.get(0);
 
         if(predict == -1)

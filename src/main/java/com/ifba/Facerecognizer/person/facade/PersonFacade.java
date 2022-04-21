@@ -106,7 +106,7 @@ public class PersonFacade {
                 .fileDetectFaceList(fileDetectFaces).build();
     }
 
-    public List<PersonFileRecognize> recognizePeople(MultipartFile[] images) {
+    public List<PersonFileRecognize> eigenFaceRecognizePeople(MultipartFile[] images) {
         Map<Mat, Rect> faces = null;
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
@@ -124,7 +124,7 @@ public class PersonFacade {
 
                 List<Person> personList = null;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
-                    Integer id = javacv.recognizeFaces(face.getKey());
+                    Integer id = javacv.recognizeEigenFaces(face.getKey());
                     if(id != null) {
                         if(personList == null) {
                             personList = new ArrayList<>();
@@ -145,7 +145,103 @@ public class PersonFacade {
                                     "Não foi encontrado faces conhecidas").build());
                 }
 
-                imwrite("Resultado.jpg", javacv.getRgbaMat());
+                imwrite("ResultadoEigenface.jpg", javacv.getRgbaMat());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return personFileRecognizeList;
+    }
+
+    public List<PersonFileRecognize> fisherFaceRecognizePeople(MultipartFile[] images) {
+        Map<Mat, Rect> faces = null;
+
+        File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
+
+        String uploadedFileLocation;
+        List<PersonFileRecognize> personFileRecognizeList = new ArrayList<>();
+        for(MultipartFile img : images) {
+            uploadedFileLocation = dirLocal.getAbsolutePath() + "/" + img.getOriginalFilename();
+            try {
+                this.saveToFile(img.getInputStream(), uploadedFileLocation);
+                BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
+                faces = javacv.detectFaces(image);
+
+                javacv.setFisherFaceRecognizer();
+
+                List<Person> personList = null;
+                for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
+                    Integer id = javacv.recognizeFisherFaces(face.getKey());
+                    if(id != null) {
+                        if(personList == null) {
+                            personList = new ArrayList<>();
+                        }
+
+                        int x = Math.max(face.getValue().tl().x() - 10, 0);
+                        int y = Math.max(face.getValue().tl().y() - 10, 0);
+
+                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
+                        personList.add(personService.findById(id).get());
+                    }
+                }
+
+                if(personList != null) {
+                    personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
+                            .personList(personList)
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
+                                    "Não foi encontrado faces conhecidas").build());
+                }
+
+                imwrite("ResultadoFisherface.jpg", javacv.getRgbaMat());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return personFileRecognizeList;
+    }
+
+    public List<PersonFileRecognize> lbphFaceRecognizePeople(MultipartFile[] images) {
+        Map<Mat, Rect> faces = null;
+
+        File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
+
+        String uploadedFileLocation;
+        List<PersonFileRecognize> personFileRecognizeList = new ArrayList<>();
+        for(MultipartFile img : images) {
+            uploadedFileLocation = dirLocal.getAbsolutePath() + "/" + img.getOriginalFilename();
+            try {
+                this.saveToFile(img.getInputStream(), uploadedFileLocation);
+                BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
+                faces = javacv.detectFaces(image);
+
+                javacv.setLBPHFaceRecognizer();
+
+                List<Person> personList = null;
+                for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
+                    Integer id = javacv.recognizeLPBHFaces(face.getKey());
+                    if(id != null) {
+                        if(personList == null) {
+                            personList = new ArrayList<>();
+                        }
+
+                        int x = Math.max(face.getValue().tl().x() - 10, 0);
+                        int y = Math.max(face.getValue().tl().y() - 10, 0);
+
+                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
+                        personList.add(personService.findById(id).get());
+                    }
+                }
+
+                if(personList != null) {
+                    personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
+                            .personList(personList)
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
+                                    "Não foi encontrado faces conhecidas").build());
+                }
+
+                imwrite("ResultadoLBPH.jpg", javacv.getRgbaMat());
             } catch (IOException e) {
                 e.printStackTrace();
             }

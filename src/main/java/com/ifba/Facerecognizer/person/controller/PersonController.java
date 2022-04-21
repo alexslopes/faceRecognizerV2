@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -38,9 +41,13 @@ public class PersonController {
     }
 
     @PostMapping("recognize")
-    public List<PersonFileRecognize> recognizeFace(@RequestParam("images") MultipartFile[] images) {
+    public Map<String, List<PersonFileRecognize>> recognizeFace(@RequestParam("images") MultipartFile[] images) {
+        Map<String, List<PersonFileRecognize>> map  = new HashMap<>();
+        map.put("eigenFace", personFacade.eigenFaceRecognizePeople(images));
+        map.put("fisherFace",personFacade.fisherFaceRecognizePeople(images));
+        map.put("lbph",personFacade.lbphFaceRecognizePeople(images));
 
-        return personFacade.recognizePeople(images);
+        return map;
     }
 
     @PostMapping("traine-register")
