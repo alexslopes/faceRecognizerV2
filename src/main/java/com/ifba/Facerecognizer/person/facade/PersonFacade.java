@@ -6,7 +6,6 @@ import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
 import com.ifba.Facerecognizer.person.model.ResponseTraine;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -121,7 +120,7 @@ public class PersonFacade {
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
                 faces = javacv.detectFaces(image);
 
-                javacv.setRecognizer();
+                javacv.setEiginFaceRecognizer();
 
                 List<Person> personList = null;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
