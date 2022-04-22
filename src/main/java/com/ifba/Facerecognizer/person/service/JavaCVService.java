@@ -2,6 +2,7 @@ package com.ifba.Facerecognizer.person.service;
 
 import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.*;
@@ -117,11 +118,10 @@ public class JavaCVService {
         fisherFaceRecognizer.save(FISHER_FACES_CLASSIFIER);
     }
 
-    public Map<Mat, Rect> detectFaces(BufferedImage image) throws IOException {
+    public Map<Mat, Rect> detectFaces(Mat rgbaMat) throws IOException {
 
         Map<Mat, Rect> detectFaces = new HashMap<>();
 
-        Mat rgbaMat = this.BufferedImage2Mat(image);
         Mat greyMat = new Mat();
         cvtColor(rgbaMat, greyMat, CV_BGR2GRAY);
         RectVector faces = new RectVector();
@@ -146,7 +146,7 @@ public class JavaCVService {
 
         List<Mat> detectFaces = new ArrayList<>();
 
-        Mat rgbaMat = this.BufferedImage2Mat(image);
+        Mat rgbaMat = javaCVService.BufferedImage2Mat(image);
         Mat greyMat = new Mat();
         cvtColor(rgbaMat, greyMat, CV_BGR2GRAY);
         RectVector faces = new RectVector();
@@ -253,4 +253,19 @@ public class JavaCVService {
         OpenCVFrameConverter.ToMat cv = new OpenCVFrameConverter.ToMat();
         return cv.convertToMat(new Java2DFrameConverter().convert(image));
     }
+
+    public static BufferedImage toBufferedImage(Mat mat) {
+        // Make sure that FrameConverters and JavaCV Frame are properly closed
+        try (OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat()) {
+            try (Frame frame = converter.convert(mat)) {
+                try (Java2DFrameConverter java2DConverter = new Java2DFrameConverter()) {
+                    BufferedImage img = java2DConverter.convert(frame);
+                    converter.close();
+                    java2DConverter.close();
+                    return img;
+                }
+            }
+        }
+    }
+
 }

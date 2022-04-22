@@ -118,7 +118,8 @@ public class PersonFacade {
             try {
                 this.saveToFile(img.getInputStream(), uploadedFileLocation);
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
-                faces = javacv.detectFaces(image);
+                Mat rgbaMat = JavaCVService.BufferedImage2Mat(image);
+                faces = javacv.detectFaces(rgbaMat);
 
                 javacv.setEiginFaceRecognizer();
 
@@ -133,7 +134,7 @@ public class PersonFacade {
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
-                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
+                        putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
                     }
                 }
@@ -166,7 +167,8 @@ public class PersonFacade {
             try {
                 this.saveToFile(img.getInputStream(), uploadedFileLocation);
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
-                faces = javacv.detectFaces(image);
+                Mat rgbaMat = JavaCVService.BufferedImage2Mat(image);
+                faces = javacv.detectFaces(rgbaMat);
 
                 javacv.setFisherFaceRecognizer();
 
@@ -181,7 +183,7 @@ public class PersonFacade {
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
-                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
+                        putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
                     }
                 }
@@ -214,7 +216,8 @@ public class PersonFacade {
             try {
                 this.saveToFile(img.getInputStream(), uploadedFileLocation);
                 BufferedImage image = ImageIO.read(new File(uploadedFileLocation));
-                faces = javacv.detectFaces(image);
+                Mat rgbaMat = JavaCVService.BufferedImage2Mat(image);
+                faces = javacv.detectFaces(rgbaMat);
 
                 javacv.setLBPHFaceRecognizer();
 
@@ -229,7 +232,7 @@ public class PersonFacade {
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
-                        putText(javacv.getRgbaMat(), personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
+                        putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
                     }
                 }
@@ -324,7 +327,7 @@ public class PersonFacade {
             String message = null;
             String status = null;
             try {
-                faces = Arrays.asList(javacv.BufferedImage2Mat(ImageIO.read(images[i].getInputStream())));
+                faces = Arrays.asList(JavaCVService.BufferedImage2Mat(ImageIO.read(images[i].getInputStream())));
             } catch (IOException e) {
                 message = "Erro ao ler imagem";
                 status = "Error";
