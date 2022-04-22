@@ -125,6 +125,12 @@ public class JavaCVService {
         Mat greyMat = new Mat();
         cvtColor(rgbaMat, greyMat, CV_BGR2GRAY);
         RectVector faces = new RectVector();
+//        faceDetector.detectMultiScale(greyMat, faces,
+//                1.15,
+//                1,
+//                0,
+//                new Size(0,0),
+//                new Size(50,50));
         faceDetector.detectMultiScale(greyMat, faces);
         System.out.println("Faces detectadas: " + faces.size());
 
