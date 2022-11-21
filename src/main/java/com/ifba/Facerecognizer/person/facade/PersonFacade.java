@@ -6,6 +6,7 @@ import com.ifba.Facerecognizer.person.model.PersonFileRecognize;
 import com.ifba.Facerecognizer.person.model.ResponseTraine;
 import com.ifba.Facerecognizer.person.service.JavaCVService;
 import com.ifba.Facerecognizer.person.service.PersonService;
+import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -124,8 +125,10 @@ public class PersonFacade {
                 javacv.setEiginFaceRecognizer();
 
                 List<Person> personList = null;
+                double confiabilityTotal = 0;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
-                    Integer id = javacv.recognizeEigenFaces(face.getKey());
+                    DoublePointer confiability = new DoublePointer(1);
+                    Integer id = javacv.recognizeEigenFaces(face.getKey(), confiability);
                     if(id != null) {
                         if(personList == null) {
                             personList = new ArrayList<>();
@@ -135,18 +138,23 @@ public class PersonFacade {
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
-                        personList.add(personService.findById(id).get());
+                        Person person = personService.findById(id).get();
+                        person.setConfiability(Double.toString(confiability.get(0)));
+                        personList.add(person);
+
+                        confiabilityTotal = confiabilityTotal + confiability.get(0);
                     }
                 }
 
                 if(personList != null) {
                     personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
                             .personList(personList)
-                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" +
+                                    "\n" + "com confiabilidade de:" + confiabilityTotal:
                                     "Não foi encontrado faces conhecidas").build());
                 }
 
-                imwrite("ResultadoEigenface.jpg", javacv.getRgbaMat());
+                imwrite("ResultadoEigenface(10, 0).jpg", javacv.getRgbaMat());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -173,8 +181,10 @@ public class PersonFacade {
                 javacv.setFisherFaceRecognizer();
 
                 List<Person> personList = null;
+                double confiabilityTotal = 0;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
-                    Integer id = javacv.recognizeFisherFaces(face.getKey());
+                    DoublePointer confiability = new DoublePointer(1);
+                    Integer id = javacv.recognizeFisherFaces(face.getKey(),confiability);
                     if(id != null) {
                         if(personList == null) {
                             personList = new ArrayList<>();
@@ -182,6 +192,11 @@ public class PersonFacade {
 
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
+
+                        Person person = personService.findById(id).get();
+                        person.setConfiability(Double.toString(confiability.get(0)));
+                        personList.add(person);
+                        confiabilityTotal = confiabilityTotal + confiability.get(0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
@@ -191,11 +206,12 @@ public class PersonFacade {
                 if(personList != null) {
                     personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
                             .personList(personList)
-                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
-                                    "Não foi encontrado faces conhecidas").build());
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" +
+                                    "\n" + "com confiabilidade de:" + confiabilityTotal:
+                                    "Não foi encontrado faces conhecidas" + "\n" + "com confiabilidade de:" + confiabilityTotal).build());
                 }
 
-                imwrite("ResultadoFisherface.jpg", javacv.getRgbaMat());
+                imwrite("ResultadoFisherface(10, 0).jpg", javacv.getRgbaMat());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -222,8 +238,10 @@ public class PersonFacade {
                 javacv.setLBPHFaceRecognizer();
 
                 List<Person> personList = null;
+                double confiabilityTotal = 0;
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
-                    Integer id = javacv.recognizeLPBHFaces(face.getKey());
+                    DoublePointer confiability = new DoublePointer(1);
+                    Integer id = javacv.recognizeLPBHFaces(face.getKey(),confiability);
                     if(id != null) {
                         if(personList == null) {
                             personList = new ArrayList<>();
@@ -231,6 +249,12 @@ public class PersonFacade {
 
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
+
+                        Person person = personService.findById(id).get();
+                        person.setConfiability(Double.toString(confiability.get(0)));
+                        personList.add(person);
+
+                        confiabilityTotal = confiabilityTotal + confiability.get(0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         personList.add(personService.findById(id).get());
@@ -240,11 +264,12 @@ public class PersonFacade {
                 if(personList != null) {
                     personFileRecognizeList.add(PersonFileRecognize.builder().filename(img.getOriginalFilename())
                             .personList(personList)
-                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" :
-                                    "Não foi encontrado faces conhecidas").build());
+                            .message(personList.size() > 0 ? "Foi/Foram econtrado(s) " + personList.size() + "face(s) conhecida(s)" +
+                                    "\n" + "com confiabilidade de:" + confiabilityTotal:
+                                    "Não foi encontrado faces conhecidas" + "\n" + "com confiabilidade de:" + confiabilityTotal).build());
                 }
 
-                imwrite("ResultadoLBPH.jpg", javacv.getRgbaMat());
+                imwrite("ResultadoLBPH(12, 10, 15, 15, 0).jpg", javacv.getRgbaMat());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -343,7 +368,7 @@ public class PersonFacade {
                 message = "Mais de uma face encontrada";
                 totalErroMAnyfaces++;
                 status = "Error";
-            } else if ( faces.size() == 0 ){
+            } else if ( faces.size() == 0 ){;
                 message = "Não foim encontrada face";
                 totalErroNoface++;
                 status = "Error";

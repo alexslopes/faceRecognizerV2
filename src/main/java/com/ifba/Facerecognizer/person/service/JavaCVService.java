@@ -98,21 +98,21 @@ public class JavaCVService {
     }
 
     public void setEiginFaceTrainer(MatVector photos, Mat labels) {
-        eigenFaceRecognizer =  EigenFaceRecognizer.create();
+        eigenFaceRecognizer =  EigenFaceRecognizer.create(100, 0);
 
         eigenFaceRecognizer.train(photos, labels);
         eigenFaceRecognizer.save(EIGEN_FACES_CLASSIFIER);
     }
 
     public void setLBPHFaceTrainer(MatVector photos, Mat labels) {
-        lbphRecognizer =  LBPHFaceRecognizer.create();
+        lbphRecognizer =  LBPHFaceRecognizer.create(12, 10, 15, 15, 0);
 
         lbphRecognizer.train(photos, labels);
         lbphRecognizer.save(LBPH_FACES_CLASSIFIER);
     }
 
     public void setFisherFaceTrainer(MatVector photos, Mat labels) {
-        fisherFaceRecognizer =  FisherFaceRecognizer.create();
+        fisherFaceRecognizer =  FisherFaceRecognizer.create(100, 0);
 
         fisherFaceRecognizer.train(photos, labels);
         fisherFaceRecognizer.save(FISHER_FACES_CLASSIFIER);
@@ -216,10 +216,9 @@ public class JavaCVService {
 
     }
 
-    public Integer recognizeEigenFaces(Mat face) {
+    public Integer recognizeEigenFaces(Mat face, DoublePointer confiability) {
 
         IntPointer label = new IntPointer(1);
-        DoublePointer confiability = new DoublePointer(1);
         eigenFaceRecognizer.predict(face, label, confiability);
         int predict = label.get(0);
 
@@ -229,10 +228,9 @@ public class JavaCVService {
         return predict;
     }
 
-    public Integer recognizeFisherFaces(Mat face) {
+    public Integer recognizeFisherFaces(Mat face, DoublePointer confiability) {
 
         IntPointer label = new IntPointer(1);
-        DoublePointer confiability = new DoublePointer(1);
         fisherFaceRecognizer.predict(face, label, confiability);
         int predict = label.get(0);
 
@@ -242,10 +240,9 @@ public class JavaCVService {
         return predict;
     }
 
-    public Integer recognizeLPBHFaces(Mat face) {
+    public Integer recognizeLPBHFaces(Mat face, DoublePointer confiability) {
 
         IntPointer label = new IntPointer(1);
-        DoublePointer confiability = new DoublePointer(1);
         lbphRecognizer.predict(face, label, confiability);
         int predict = label.get(0);
 

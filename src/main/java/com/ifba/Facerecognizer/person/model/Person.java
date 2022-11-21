@@ -28,4 +28,6 @@ public class Person {
     @NonNull
     @Column(unique = true)
     private String email;
+
+    private String confiability;
 }
