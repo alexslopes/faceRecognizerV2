@@ -6,10 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @AllArgsConstructor
@@ -28,6 +25,9 @@ public class Person {
     @NonNull
     @Column(unique = true)
     private String email;
+
+    @Lob
+    private byte[] foto;
 
     private String confiability;
 }

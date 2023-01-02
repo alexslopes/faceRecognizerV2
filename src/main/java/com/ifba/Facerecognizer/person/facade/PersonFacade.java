@@ -140,6 +140,7 @@ public class PersonFacade {
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
                         Person person = personService.findById(id).get();
                         person.setConfiability(Double.toString(confiability.get(0)));
+                        person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
 
                         confiabilityTotal = confiabilityTotal + confiability.get(0);
@@ -195,11 +196,11 @@ public class PersonFacade {
 
                         Person person = personService.findById(id).get();
                         person.setConfiability(Double.toString(confiability.get(0)));
+                        person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
                         confiabilityTotal = confiabilityTotal + confiability.get(0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
-                        personList.add(personService.findById(id).get());
                     }
                 }
 
@@ -252,12 +253,12 @@ public class PersonFacade {
 
                         Person person = personService.findById(id).get();
                         person.setConfiability(Double.toString(confiability.get(0)));
+                        person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
 
                         confiabilityTotal = confiabilityTotal + confiability.get(0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
-                        personList.add(personService.findById(id).get());
                     }
                 }
 
