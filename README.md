@@ -1,5 +1,4 @@
 #FaceRecognizer
----Projeto em desenvolvimento---
 
 #Projeto FaceRecognizer Tem como finalidade fornecer API para reconhecimento de faces utilizando VIola-Jones com EIgenfaces, Fisherfaces e LbpH
 
