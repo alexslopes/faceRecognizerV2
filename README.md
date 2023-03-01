@@ -7,6 +7,8 @@ JDK 1.8
 
 MAVEN 3.5
 
+Postgresql
+
 ##Execução Para executar o projeto, utilize uma IDE (Eclipse ou Intellij) ou eecute o comando mvn spring-boot:run
 
 #Ferramentas utilizadas
