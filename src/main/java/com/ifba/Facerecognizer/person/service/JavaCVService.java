@@ -101,7 +101,7 @@ public class JavaCVService {
     }
 
     public void setEiginFaceTrainer(MatVector photos, Mat labels) {
-        eigenFaceRecognizer =  EigenFaceRecognizer.create(100, 0);
+        eigenFaceRecognizer =  EigenFaceRecognizer.create();
 
         eigenFaceRecognizer.train(photos, labels);
         eigenFaceRecognizer.save(EIGEN_FACES_CLASSIFIER);

@@ -17,10 +17,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 import static org.bytedeco.opencv.global.opencv_imgproc.FONT_HERSHEY_PLAIN;
@@ -109,6 +107,7 @@ public class PersonFacade {
 
     public List<PersonFileRecognize> eigenFaceRecognizePeople(MultipartFile[] images) {
         Map<Mat, Rect> faces = null;
+        Map<Integer, Mat> matMap = new HashMap<>();
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
 
@@ -122,6 +121,10 @@ public class PersonFacade {
                 Mat rgbaMat = JavaCVService.BufferedImage2Mat(image);
                 faces = javacv.detectFaces(rgbaMat);
 
+//                matMap.values().forEach( v ->
+//                        imwrite(Math.random() + ".jpg", v)
+//                );
+
                 javacv.setEiginFaceRecognizer();
 
                 List<Person> personList = null;
@@ -129,6 +132,7 @@ public class PersonFacade {
                 for(Map.Entry<Mat, Rect> face : faces.entrySet()) {
                     DoublePointer confiability = new DoublePointer(1);
                     Integer id = javacv.recognizeEigenFaces(face.getKey(), confiability);
+                    imwrite(id + " " + Math.random() + ".jpg", face.getKey());
                     if(id != null) {
                         if(personList == null) {
                             personList = new ArrayList<>();
@@ -138,7 +142,9 @@ public class PersonFacade {
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
                         putText(rgbaMat, personService.findById(id).get().getName(), new Point(x, y), FONT_HERSHEY_PLAIN, 1.4, new Scalar(0,255,0,0));
-                        Person person = personService.findById(id).get();
+                        Person person = new Person();
+                        person.setId(id);
+                        person.setEmail(personService.findById(id).get().getEmail());
                         person.setConfiability(Double.toString(confiability.get(0)));
                         person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
@@ -166,6 +172,7 @@ public class PersonFacade {
 
     public List<PersonFileRecognize> fisherFaceRecognizePeople(MultipartFile[] images) {
         Map<Mat, Rect> faces = null;
+        Map<Integer, Mat> matMap = new HashMap<>();
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
 
@@ -194,7 +201,9 @@ public class PersonFacade {
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
-                        Person person = personService.findById(id).get();
+                        Person person = new Person();
+                        person.setId(id);
+                        person.setEmail(personService.findById(id).get().getEmail());
                         person.setConfiability(Double.toString(confiability.get(0)));
                         person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
@@ -223,6 +232,7 @@ public class PersonFacade {
 
     public List<PersonFileRecognize> lbphFaceRecognizePeople(MultipartFile[] images) {
         Map<Mat, Rect> faces = null;
+        Map<Integer, Mat> matMap = new HashMap<>();
 
         File dirLocal = this.createFolderIfNotExists(UPLOAD_FOLDER_PATTERN);
 
@@ -251,7 +261,9 @@ public class PersonFacade {
                         int x = Math.max(face.getValue().tl().x() - 10, 0);
                         int y = Math.max(face.getValue().tl().y() - 10, 0);
 
-                        Person person = personService.findById(id).get();
+                        Person person = new Person();
+                        person.setId(id);
+                        person.setEmail(personService.findById(id).get().getEmail());
                         person.setConfiability(Double.toString(confiability.get(0)));
                         person.setFoto(JavaCVService.toByteArray(JavaCVService.toBufferedImage(face.getKey())));
                         personList.add(person);
